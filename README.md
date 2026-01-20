@@ -2,7 +2,8 @@
 
 BananaDash is a self-hosted bookmark dashboard I built after using **Dashy for years** and hitting its limits: slow feature progress, non-interactive organization, and editing that often requires manually changing config files. BananaDash keeps the “dashboard” feel, but makes everything **interactive**, **multi-user**, and easy to manage from the UI.
 
-<img width="800" height="auto" alt="Bildschirmfoto_20260119_232201" src="https://github.com/user-attachments/assets/39db46a6-b016-4342-bcef-aa3ff5ab6ed9" />
+<img width="800" height="auto" alt="Bildschirmfoto_20260119_232201" src="https://github.com/user-attachments/assets/aa4d090b-7316-47dd-8652-87e5a06bd554" />
+
 
 ## Live Demo (Demo Account)
 
