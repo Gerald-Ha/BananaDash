@@ -1,0 +1,38 @@
+name: bananadash
+services:
+  app:
+    container_name: bananadash-app
+    build: .
+    ports:
+      - "1337:1337"
+    environment:
+      - PORT=1337
+      - MONGO_URI=mongodb://mongodb:27017/bananadash
+      - JWT_SECRET=${JWT_SECRET:-change-me}
+      - JWT_EXPIRES_IN=1d
+      - CLIENT_URL=${CLIENT_URL:-http://localhost:1337}
+      - UPLOAD_DIR=/usr/src/app/uploads
+      - ALLOW_REGISTRATION_DEFAULT=${ALLOW_REGISTRATION_DEFAULT:-false}
+      - DISABLE_CSP=${DISABLE_CSP:-true}
+
+    volumes:
+      - uploads:/usr/src/app/uploads
+    security_opt:
+      - label:disable
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+  mongodb:
+    container_name: bananadash-mongodb
+    image: mongo:4.4
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_DATABASE=bananadash
+    ports:
+      - "27020:27017"
+    volumes:
+      - mongo-data:/data/db
+volumes:
+  mongo-data:
+  uploads:
+
