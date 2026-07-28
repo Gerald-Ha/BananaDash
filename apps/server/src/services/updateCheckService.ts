@@ -113,7 +113,7 @@ export const checkForUpdates = async (
     return {
       status: data.status as UpdateStatus,
       currentVersion: data.current?.version || currentVersion,
-      latestVersion: data.update?.latest_version,
+      latestVersion: data.latest?.version || data.update?.latest_version,
       minimumSupported: data.update?.minimum_supported,
       critical: data.update?.critical,
       releasedAt: data.update?.released_at,
@@ -237,26 +237,11 @@ export const checkBananaDashUpdates = async (): Promise<UpdateCheckResult> => {
     container: process.env.DOCKER_CONTAINER || undefined,
   };
 
-  const options = {
+  return checkForUpdates(apiKey, projectId, currentVersion, {
     build,
     commit,
     imageDigest,
     channel,
     platform,
-  };
-
-  const result = await checkForUpdates(apiKey, projectId, currentVersion, options);
-
-  if (!result.latestVersion && result.status !== "error" && result.status !== "unknown") {
-    const metadata = await checkForUpdates(apiKey, projectId, "0.0.0", {
-      channel,
-      platform,
-    });
-
-    if (metadata.latestVersion) {
-      result.latestVersion = metadata.latestVersion;
-    }
-  }
-
-  return result;
+  });
 };
