@@ -2,20 +2,15 @@
 
 BananaDash is a self-hosted bookmark dashboard I built after using **Dashy for years** and hitting its limits: slow feature progress, non-interactive organization, and editing that often requires manually changing config files. BananaDash keeps the “dashboard” feel, but makes everything **interactive**, **multi-user**, and easy to manage from the UI.
 
-<img width="800" height="auto" alt="Bildschirmfoto_20260119_232201" src="https://github.com/user-attachments/assets/aa4d090b-7316-47dd-8652-87e5a06bd554" />
+## What's New in Version 2.0.0
 
+- **More reliable login:** Signing in now works correctly on the first attempt.
+- **Complete backups:** Backups now include uploaded logos and automatically downloaded website icons.
+- **Better restore:** Older backups are still supported, and missing website icons are downloaded again when possible.
+- **Improved mobile layout:** Icons and bookmark content now stay inside their cards on smaller screens.
 
-## Live Demo (Demo Account)
+<img width="800" height="auto" alt="Bildschirmfoto_20260119_232201" src="https://github.com/user-attachments/assets/39db46a6-b016-4342-bcef-aa3ff5ab6ed9" />
 
-You can try BananaDash without installing anything:
-
-- **Demo URL:** https://bananadash.gerald-hasani.com/
-- **Username:** `demo`
-- **Password:** `demo1234`
-
-> Note: The demo instance may be reset from time to time.
-
-<br>
 
 ## Why BananaDash (instead of Dashy)?
 
@@ -28,8 +23,6 @@ I wanted a tool that fixes the everyday friction I had with Dashy:
 - **Multi-user & login**: Built-in authentication + roles (Dashy doesn’t provide this out of the box).
 - **Backup & restore**: Simple built-in backup/restore workflow that just works.
 
-<br>
-
 ## Overview
 
 BananaDash organizes everything in a clean hierarchy:
@@ -37,8 +30,6 @@ BananaDash organizes everything in a clean hierarchy:
 **Spaces → Categories → Bookmarks**
 
 Use separate spaces for different contexts (e.g., **Private** and **Work**) to keep your links structured and easy to find.
-
-<br>
 
 ## Key Features
 
@@ -70,8 +61,6 @@ Use separate spaces for different contexts (e.g., **Private** and **Work**) to k
 - 📱 **Responsive UI**: Works on Desktop, Tablet, and Mobile
 - 🎯 **Onboarding Tour**: Interactive tutorial for first-time users
 
-<br>
-
 ## How It Works
 
 ### Spaces, Categories & Bookmarks
@@ -92,8 +81,6 @@ Use separate spaces for different contexts (e.g., **Private** and **Work**) to k
 - **Users**: Admins manage accounts and registration settings
 - **Backups**: Download a ZIP backup and restore it later if needed
 - **Updates**: The app checks for updates in the background and notifies you
-
-<br>
 
 ## Tech Stack
 
@@ -133,10 +120,6 @@ Use separate spaces for different contexts (e.g., **Private** and **Work**) to k
 
    * App: `http://localhost:1337`
    * MongoDB: `localhost:27020` (optional, for direct access)
-   
-> Want to try it first? Use the demo: [https://bananadash.gerald-hasani.com/](https://bananadash.gerald-hasani.com/) (demo / demo1234)
-
-<br>
 
 ## Configuration
 
@@ -148,8 +131,6 @@ The defaults work out of the box, but these environment variables are worth know
 * `DISABLE_CSP`: For local development this may be `true`; for production you usually want CSP enabled
 
 For the full configuration, see [Dokumentation.md](Dokumentation.md).
-
-<br>
 
 ## Operations
 
@@ -178,7 +159,11 @@ git pull
 docker compose up -d --build
 ```
 
-<br>
+For instructions on changing the application version manually, see [VERSIONING.md](VERSIONING.md).
+
+### MongoDB compatibility
+
+BananaDash currently uses MongoDB 4.4 to remain compatible with existing installations. Do not change the MongoDB image directly from 4.4 to 6.0: MongoDB requires a step-by-step database migration. Never delete the `mongo-data` volume during a normal update, because it contains all BananaDash data.
 
 ## Customization Examples
 
@@ -199,18 +184,11 @@ You can target specific UI areas using data attributes like:
 * `[data-bd="p2"]` (toolbar)
 * etc.
 
-<br>
-
 ## License
 
 MIT License — see repository for details.
 
-<br>
-
 ## Credits
 
 Developed by [Gerald Hasani](https://github.com/Gerald-Ha)
-
-
-
 

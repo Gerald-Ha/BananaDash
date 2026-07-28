@@ -25,31 +25,14 @@ router.use(authenticate);
 router.get("/", async (req: AuthRequest, res) => {
   const bookmarks = await BookmarkModel.find({ userId: req.user?.id }).sort({ order: 1 });
 
-  const mapped = await Promise.all(bookmarks.map(async (b) => {
+  const mapped = bookmarks.map((b) => {
     const obj = b.toObject();
-
-    let iconUrl = toPublicIcon(b.iconPath, b.iconUrl);
-
-    if (!iconUrl && !b.iconIsUploaded && b.serviceUrl) {
-      const favicon = await resolveFavicon(b.serviceUrl);
-
-      if (favicon.iconUrl) {
-        iconUrl = favicon.iconUrl;
-        if (!b.iconPath && !b.iconUrl) {
-          await BookmarkModel.updateOne(
-            { _id: b._id },
-            { $set: { iconPath: favicon.iconPath, iconUrl: favicon.iconUrl, iconIsUploaded: false } }
-
-          );
-        }
-      }
-    }
 
     return {
       ...obj,
-      iconUrl
+      iconUrl: toPublicIcon(b.iconPath, b.iconUrl)
     };
-  }));
+  });
 
   res.json({ bookmarks: mapped });
 });

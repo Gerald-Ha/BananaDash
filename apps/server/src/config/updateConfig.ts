@@ -3,5 +3,5 @@ export const updateConfig = {
   updateProjectId: "bananadash",
   updateServerUrl: "https://update.gerald-hasani.com",
   updateChannel: "stable" as "stable" | "beta",
-  appVersion: "1.0.2",
+  appVersion: "2.0.0",
 };

@@ -26,7 +26,7 @@ export const getVersionStatus = async (forceRefresh: boolean = false) => {
 
     return {
       installed,
-      latest: cachedResult.latestVersion || installed,
+      latest: cachedResult.latestVersion,
       status: mapUpdateStatus(cachedResult.status),
       updateInfo: cachedResult,
     };
@@ -41,14 +41,14 @@ export const getVersionStatus = async (forceRefresh: boolean = false) => {
     cachedAt = now;
     console.log(`[Version Service] Update check completed:`, {
       installed,
-      latest: result.latestVersion || installed,
+      latest: result.latestVersion,
       status: mapUpdateStatus(result.status),
       hasUpdateInfo: !!result,
     });
 
     return {
       installed,
-      latest: result.latestVersion || installed,
+      latest: result.latestVersion,
       status: mapUpdateStatus(result.status),
       updateInfo: result,
     };
@@ -57,7 +57,7 @@ export const getVersionStatus = async (forceRefresh: boolean = false) => {
 
     return {
       installed,
-      latest: installed,
+      latest: undefined,
       status: "unknown",
       updateInfo: null,
     };

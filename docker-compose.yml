@@ -14,7 +14,6 @@ services:
       - UPLOAD_DIR=/usr/src/app/uploads
       - ALLOW_REGISTRATION_DEFAULT=${ALLOW_REGISTRATION_DEFAULT:-false}
       - DISABLE_CSP=${DISABLE_CSP:-true}
-
     volumes:
       - uploads:/usr/src/app/uploads
     security_opt:
@@ -35,4 +34,3 @@ services:
 volumes:
   mongo-data:
   uploads:
-

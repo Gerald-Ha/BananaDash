@@ -9,10 +9,16 @@ export const connectDb = async () => {
     try {
       await mongoose.connect(env.mongoUri);
 
+      console.log("[Database] Connected to MongoDB");
+
       return;
-    } catch {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      console.error(`[Database] Connection attempt ${attempt}/${maxAttempts} failed: ${message}`);
+
       if (attempt === maxAttempts) {
-        throw new Error("Failed to connect to MongoDB");
+        throw new Error(`Failed to connect to MongoDB after ${maxAttempts} attempts: ${message}`);
       }
 
       await delay(2000);

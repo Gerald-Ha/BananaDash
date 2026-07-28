@@ -61,8 +61,32 @@ export const resolveFavicon = async (serviceUrl: string) => {
   const cached = await FaviconCacheModel.findOne({ targetUrl: serviceUrl });
 
   if (cached) {
-    const derivedUrl = cached.iconPath ? `/uploads/icons/${path.basename(cached.iconPath)}` : undefined;
-    return { iconPath: cached.iconPath, iconUrl: cached.iconUrl || derivedUrl };
+    if (!cached.iconPath && !cached.iconUrl) {
+      return {};
+    }
+
+    const filename = cached.iconUrl?.startsWith("/uploads/icons/")
+
+      ? path.basename(cached.iconUrl)
+
+      : cached.iconPath
+        ? path.basename(cached.iconPath)
+
+        : undefined;
+    if (filename) {
+      const currentPath = path.join(env.uploadDir, "icons", filename);
+
+      try {
+        const stats = await fs.stat(currentPath);
+
+        if (stats.size > 0) {
+          return { iconPath: currentPath, iconUrl: `/uploads/icons/${filename}` };
+        }
+      } catch {
+      }
+    }
+
+    await FaviconCacheModel.deleteOne({ _id: cached._id });
   }
 
   try {

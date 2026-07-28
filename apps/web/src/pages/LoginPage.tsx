@@ -51,8 +51,10 @@ const LoginPage = () => {
 
       return res.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["session"] });
+    onSuccess: (data) => {
+      queryClient.setQueryData(["session"], data.user);
+
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
 
       const redirect = (location.state as any)?.from?.pathname || "/";
       navigate(redirect, { replace: true });

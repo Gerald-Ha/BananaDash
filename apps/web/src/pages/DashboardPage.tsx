@@ -13,7 +13,12 @@ import { OnboardingTour, useOnboardingTour } from "../components/OnboardingTour"
 const SortableItem = ({ id, children }: { id: string; children: React.ReactNode }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
 
-  const style = { transform: CSS.Transform.toString(transform), transition };
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    minWidth: 0,
+    maxWidth: "100%"
+  };
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
@@ -1382,7 +1387,7 @@ const DashboardPage = () => {
             <div className={layoutClass} data-bd="p4">
               {categoriesForSpace.map((cat) => (
                 <SortableItem key={cat._id} id={cat._id}>
-                  <div className={`bg-bd-surface rounded-xl ${sizePadding} ${itemSizeClass} space-y-3 border border-bd-border shadow-bd ${fitBoxMode === "fit" && effectiveLayout === "horizontal" ? "break-inside-avoid w-full mb-4" : ""}`}>
+                  <div className={`bg-bd-surface rounded-xl ${sizePadding} ${itemSizeClass} min-w-0 max-w-full overflow-hidden space-y-3 border border-bd-border shadow-bd ${fitBoxMode === "fit" && effectiveLayout === "horizontal" ? "break-inside-avoid w-full mb-4" : ""}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2 min-w-0">
                   <div className="shrink-0">
@@ -1450,7 +1455,7 @@ const DashboardPage = () => {
                       .map((bookmark) => (
                         <SortableItem key={bookmark._id} id={bookmark._id}>
                           <div
-                            className="bg-bd-surface-2 border border-bd-border rounded-lg p-3 flex items-center justify-between cursor-pointer hover:bg-bd-surface transition-colors"
+                            className="bg-bd-surface-2 border border-bd-border rounded-lg p-3 min-w-0 max-w-full overflow-hidden flex items-center justify-between gap-2 cursor-pointer hover:bg-bd-surface transition-colors"
                             role="button"
                             tabIndex={0}
 
@@ -1459,7 +1464,7 @@ const DashboardPage = () => {
                             onKeyDown={(e) => e.key === "Enter" && window.open(bookmark.serviceUrl, "_blank", "noopener,noreferrer")}
 
                           >
-                            <div className="flex items-center space-x-3 min-w-0">
+                            <div className="flex flex-1 items-center space-x-3 min-w-0 overflow-hidden">
                               {(bookmark.iconUrl || bookmark.iconPath) && (
                                 <img
                                   src={bookmark.iconUrl || bookmark.iconPath}
@@ -1469,8 +1474,8 @@ const DashboardPage = () => {
                                 />
                               )}
 
-                              <div className="min-w-0">
-                                <div className="font-semibold max-w-[19ch] overflow-hidden text-ellipsis whitespace-nowrap text-bd-text">{bookmark.title}</div>
+                              <div className="min-w-0 flex-1 overflow-hidden">
+                                <div className="font-semibold overflow-hidden text-ellipsis whitespace-nowrap text-bd-text">{bookmark.title}</div>
                                 <div className="text-sm text-bd-text-muted truncate">{bookmark.description}</div>
                               </div>
                             </div>

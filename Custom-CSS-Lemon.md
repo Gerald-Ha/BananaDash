@@ -287,5 +287,5 @@ Combine lemon with mint green:
 --bd-accent-hover: #7BC4B0;
 ```
 
-Enjoy customizing your BananaDash theme!
+Enjoy customizing your BananaDash theme! 🍋
 

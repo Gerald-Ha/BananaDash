@@ -237,11 +237,26 @@ export const checkBananaDashUpdates = async (): Promise<UpdateCheckResult> => {
     container: process.env.DOCKER_CONTAINER || undefined,
   };
 
-  return checkForUpdates(apiKey, projectId, currentVersion, {
+  const options = {
     build,
     commit,
     imageDigest,
     channel,
     platform,
-  });
+  };
+
+  const result = await checkForUpdates(apiKey, projectId, currentVersion, options);
+
+  if (!result.latestVersion && result.status !== "error" && result.status !== "unknown") {
+    const metadata = await checkForUpdates(apiKey, projectId, "0.0.0", {
+      channel,
+      platform,
+    });
+
+    if (metadata.latestVersion) {
+      result.latestVersion = metadata.latestVersion;
+    }
+  }
+
+  return result;
 };

@@ -12,6 +12,20 @@ import { SettingsModel } from "../models/Settings";
 import { env } from "../env";
 import { resolveFavicon } from "./faviconService";
 
+const uploadArchiveName = (iconUrl?: string | null) => {
+  if (!iconUrl?.startsWith("/uploads/")) return null;
+  const relative = iconUrl.slice("/uploads/".length).replace(/\\/g, "/");
+
+  if (!relative || relative.split("/").includes("..")) return null;
+  return relative;
+};
+
+const currentIconPath = (iconUrl?: string | null, fallback?: string | null) => {
+  const relative = uploadArchiveName(iconUrl);
+
+  return relative ? path.join(env.uploadDir, ...relative.split("/")) : fallback;
+};
+
 export const createBackup = async (userId: string) => {
   const archive = archiver("zip", { zlib: { level: 9 } });
 
@@ -34,42 +48,30 @@ export const createBackup = async (userId: string) => {
 
   archive.append(payload, { name: "data.json" });
 
-  const spacesDir = path.join(env.uploadDir, "spaces");
+  const iconRecords = [...spaces, ...categories, ...bookmarks] as Array<{
+    iconUrl?: string | null;
+    iconPath?: string | null;
+  }>;
+  const archived = new Set<string>();
 
-  try {
-    const spaceDirs = await fs.readdir(spacesDir);
+  for (const record of iconRecords) {
+    const archiveName = uploadArchiveName(record.iconUrl);
 
-    for (const spaceDirName of spaceDirs) {
-      const spaceDirPath = path.join(spacesDir, spaceDirName);
+    if (!archiveName || archived.has(archiveName)) continue;
+    const source = currentIconPath(record.iconUrl, record.iconPath);
 
-      const stat = await fs.stat(spaceDirPath);
+    if (!source) continue;
+    try {
+      const stats = await fs.stat(source);
 
-      if (stat.isDirectory()) {
-        const categoryDirs = await fs.readdir(spaceDirPath);
+      if (stats.isFile() && stats.size > 0) {
+        archive.file(source, { name: archiveName });
 
-        for (const categoryDirName of categoryDirs) {
-          const categoryDirPath = path.join(spaceDirPath, categoryDirName);
-
-          const catStat = await fs.stat(categoryDirPath);
-
-          if (catStat.isDirectory()) {
-            const files = await fs.readdir(categoryDirPath);
-
-            for (const file of files) {
-              const full = path.join(categoryDirPath, file);
-
-              const fileStat = await fs.stat(full);
-
-              if (fileStat.isFile()) {
-                archive.file(full, { name: `spaces/${spaceDirName}/${categoryDirName}/${file}` });
-              }
-            }
-          }
-        }
+        archived.add(archiveName);
       }
+    } catch {
+      console.warn(`[Backup] Referenced icon is missing: ${archiveName}`);
     }
-  } catch (err) {
-    console.log("[Backup] No spaces directory or error reading:", err);
   }
 
   await archive.finalize();
@@ -126,7 +128,11 @@ export const restoreBackup = async (userId: string, zipPath: string) => {
   const categoryIdMap = new Map<string, string>();
 
   if (parsed.spaces?.length) {
-    const spacesToInsert = parsed.spaces.map(({ _id, ...s }) => ({ ...s, userId }));
+    const spacesToInsert = parsed.spaces.map(({ _id, ...s }) => ({
+      ...s,
+      userId,
+      iconPath: currentIconPath(s.iconUrl, s.iconPath)
+    }));
 
     const insertedSpaces = await SpaceModel.insertMany(spacesToInsert);
 
@@ -141,7 +147,11 @@ export const restoreBackup = async (userId: string, zipPath: string) => {
 
   if (parsed.categories?.length) {
     const categoriesToInsert = parsed.categories.map(({ _id, ...c }) => {
-      const newCategory: any = { ...c, userId };
+      const newCategory: any = {
+        ...c,
+        userId,
+        iconPath: currentIconPath(c.iconUrl, c.iconPath)
+      };
 
       if (c.spaceId && spaceIdMap.has(c.spaceId.toString())) {
         const newSpaceId = spaceIdMap.get(c.spaceId.toString());
@@ -169,7 +179,11 @@ export const restoreBackup = async (userId: string, zipPath: string) => {
 
   if (parsed.bookmarks?.length) {
     const bookmarksToInsert = parsed.bookmarks.map(({ _id, ...b }) => {
-      const newBookmark: any = { ...b, userId };
+      const newBookmark: any = {
+        ...b,
+        userId,
+        iconPath: currentIconPath(b.iconUrl, b.iconPath)
+      };
 
       if (b.spaceId && spaceIdMap.has(b.spaceId.toString())) {
         const newSpaceId = spaceIdMap.get(b.spaceId.toString());
@@ -210,12 +224,13 @@ export const restoreBackup = async (userId: string, zipPath: string) => {
 
   await fs.mkdir(iconsDir, { recursive: true });
 
-  const iconEntries = zip.getEntries().filter((e) => e.entryName.startsWith("icons/"));
+  const iconEntries = zip.getEntries().filter((e) => !e.isDirectory && e.entryName.startsWith("icons/"));
 
   let iconCount = 0;
   for (const entry of iconEntries) {
     const fileName = entry.entryName.replace("icons/", "");
 
+    if (!fileName || fileName.includes("/") || fileName.includes("\\") || fileName === "..") continue;
     const target = path.join(iconsDir, fileName);
 
     const data = entry.getData();
@@ -231,13 +246,17 @@ export const restoreBackup = async (userId: string, zipPath: string) => {
 
   await fs.mkdir(spacesDir, { recursive: true });
 
-  const spaceEntries = zip.getEntries().filter((e) => e.entryName.startsWith("spaces/"));
+  const spaceEntries = zip.getEntries().filter((e) => !e.isDirectory && e.entryName.startsWith("spaces/"));
 
   let spaceIconCount = 0;
   for (const entry of spaceEntries) {
     const relativePath = entry.entryName.replace("spaces/", "");
 
-    const target = path.join(spacesDir, relativePath);
+    const target = path.resolve(spacesDir, relativePath);
+
+    if (!target.startsWith(`${path.resolve(spacesDir)}${path.sep}`)) {
+      throw new Error("Invalid backup: unsafe upload path");
+    }
 
     const targetDir = path.dirname(target);
 
@@ -269,9 +288,13 @@ export const restoreBackup = async (userId: string, zipPath: string) => {
         needsRefetch = true;
       } else {
         try {
-          await fs.access(bookmark.iconPath);
+          const normalizedPath = currentIconPath(bookmark.iconUrl, bookmark.iconPath);
 
-          const stats = await fs.stat(bookmark.iconPath);
+          if (!normalizedPath) throw new Error("Missing icon path");
+
+          await fs.access(normalizedPath);
+
+          const stats = await fs.stat(normalizedPath);
 
           if (stats.size === 0) {
             needsRefetch = true;
